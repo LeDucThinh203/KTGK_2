@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${product.id != null ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm'}">Form Sản Phẩm</title>
+    <style>
+        .form-shell {
+            max-width: 880px;
+            margin: 0 auto;
+        }
+
+        .form-hint {
+            color: #d9f6ff;
+            font-size: 0.92rem;
+            margin-bottom: 0;
+        }
+
+        .editor-card {
+            padding: 1.15rem;
+        }
+
+        .field-label {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.45rem;
+        }
+
+        .input-clean,
+        .select-clean {
+            border-radius: 12px;
+            border: 1px solid #cfe5ef;
+            padding: 0.62rem 0.85rem;
+        }
+
+        .input-clean:focus,
+        .select-clean:focus {
+            border-color: #0ea5b7;
+            box-shadow: 0 0 0 0.2rem rgba(14, 165, 183, 0.18);
+        }
+
+        .preview-panel {
+            border: 1px dashed #8fc3d2;
+            border-radius: 14px;
+            background: #f3fbfe;
+            padding: 0.9rem;
+            text-align: center;
+            display: none;
+        }
+
+        .preview-panel img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #d4eaf1;
+            background: #ffffff;
+        }
+
+        .preview-caption {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .editor-card { padding: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="form-shell">
+
+        <div class="page-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h2 class="section-title mb-2">
+                    <i class="bi bi-plus-circle me-2" th:unless="${product.id != null}"></i>
+                    <i class="bi bi-pencil-square me-2" th:if="${product.id != null}"></i>
+                    <span th:text="${product.id != null ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới'}"></span>
+                </h2>
+                <p class="form-hint">Điền thông tin chi tiết để sản phẩm hiển thị rõ ràng hơn trên danh sách.</p>
+            </div>
+            <a th:href="@{/products}" class="btn btn-light btn-sm px-3 mt-1">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+
+        <div class="soft-card editor-card">
+            <form th:action="@{/products/save}" th:object="${product}" method="post" novalidate>
+                <input type="hidden" th:field="*{id}">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-7">
+                        <div class="mb-3">
+                            <label for="name" class="field-label">
+                                <i class="bi bi-tag me-1 text-primary"></i>Tên sản phẩm
+                            </label>
+                            <input type="text" id="name" th:field="*{name}"
+                                   class="form-control input-clean"
+                                   th:classappend="${#fields.hasErrors('name') ? ' is-invalid' : ''}"
+                                   placeholder="Ví dụ: Tai nghe Bluetooth X200">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="field-label">
+                                <i class="bi bi-image me-1 text-primary"></i>URL Hình ảnh
+                            </label>
+                            <input type="text" id="image" th:field="*{image}"
+                                   class="form-control input-clean"
+                                   th:classappend="${#fields.hasErrors('image') ? ' is-invalid' : ''}"
+                                   placeholder="https://example.com/image.jpg">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('image')}" th:errors="*{image}"></div>
+                            <div class="form-text">Có thể nhập link ảnh trực tiếp hoặc để trống.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="field-label">
+                                <i class="bi bi-currency-dollar me-1 text-primary"></i>Giá (₫)
+                            </label>
+                            <input type="number" id="price" th:field="*{price}"
+                                   class="form-control input-clean"
+                                   th:classappend="${#fields.hasErrors('price') ? ' is-invalid' : ''}"
+                                   placeholder="Nhập giá sản phẩm..." min="1">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="category" class="field-label">
+                                <i class="bi bi-folder me-1 text-primary"></i>Danh mục
+                            </label>
+                            <select id="category" th:field="*{category}" class="form-select select-clean">
+                                <option value="">-- Chọn danh mục --</option>
+                                <option th:each="cat : ${categories}"
+                                        th:value="${cat.id}"
+                                        th:text="${cat.name}"></option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-brand flex-fill fw-semibold">
+                                <i class="bi bi-save me-1"></i>Lưu sản phẩm
+                            </button>
+                            <a th:href="@{/products}" class="btn btn-outline-secondary flex-fill fw-semibold">
+                                Hủy
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-5">
+                        <div class="preview-panel" id="previewBox">
+                            <img id="imgPreview" src="" alt="Preview">
+                            <p class="preview-caption mb-0">Xem trước ảnh sản phẩm</p>
+                        </div>
+
+                        <div class="mt-3 rounded-4 p-3" style="background:#f7fbfd;border:1px solid #d8edf4;">
+                            <h6 class="fw-bold mb-2"><i class="bi bi-lightbulb me-1 text-warning"></i>Gợi ý nhập liệu</h6>
+                            <ul class="mb-0 ps-3 small text-secondary">
+                                <li>Đặt tên ngắn gọn, dễ tìm kiếm.</li>
+                                <li>Giá nên là số nguyên và lớn hơn 0.</li>
+                                <li>Luôn chọn danh mục để tránh lỗi dữ liệu.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        const imgInput = document.getElementById('image');
+        const previewBox = document.getElementById('previewBox');
+        const imgPreview = document.getElementById('imgPreview');
+
+        if (imgInput) {
+            function updatePreview() {
+                const url = imgInput.value.trim();
+                if (url.startsWith('http')) {
+                    imgPreview.src = url;
+                    previewBox.style.display = 'block';
+                } else {
+                    previewBox.style.display = 'none';
+                }
+            }
+
+            imgInput.addEventListener('input', updatePreview);
+            updatePreview();
+        }
+    </script>
+</th:block>
+</body>
+</html>
